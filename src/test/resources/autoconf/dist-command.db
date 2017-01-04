@@ -1,0 +1,3 @@
+masterUrl=jdbc:mysql://172.31.101.12:3306/jason-statham?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true
+username=fs
+password=fsxiaoke

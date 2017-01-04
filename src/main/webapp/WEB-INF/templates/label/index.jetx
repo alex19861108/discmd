@@ -1,0 +1,122 @@
+#set(active_nav="labelMgr")
+
+#tag layout_block("headContent")
+<link href="//static.foneshare.cn/oss/AdminLTE/plugins/datatables/dataTables.bootstrap.css" rel="stylesheet" type="text/css"/>
+<style>
+  table.dataTable span.highlight {
+    background-color: #FFFF88;
+  }
+</style>
+#end
+
+#tag layout_block("breadcrumbContent")
+<section class="content-header">
+  <h1>
+    标签管理
+    <small></small>
+  </h1>
+  <ol class="breadcrumb">
+    <li><a href="${CONTEXT_PATH}"><i class="fa fa-dashboard"></i>主页</a></li>
+    <li class="active"><a href="#">标签管理</a></li>
+  </ol>
+</section>
+#end
+
+#tag layout_block("bodyContent")
+<section class="content" ng-app="labelSearch" ng-controller="labelSearchCtrl">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="box box-info">
+        <div class="box-header with-border">
+          <div class="pull-right">
+            <a class="btn btn-info btn-flat" href="${CONTEXT_PATH}/label/add/"><i class="icon fa fa-plus"></i><span>&nbsp;&nbsp;新建标签</span></a>
+          </div>
+        </div>
+        <div class="box-body">
+          <table class="table table-bordered table-striped" id="labelTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>标签</th>
+                <th>描述</th>
+                <th>挂载机器</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              #for (LabelMachineUnion labelMachineUnion : labelMachineUnions)
+                <tr>
+                  <td class="col-md-1">${labelMachineUnion.label.id}</td>
+                  <td class="col-md-3"><a href="${CONTEXT_PATH}/label/detail/${labelMachineUnion.label.id}">${labelMachineUnion.label.nm}</a></td>
+                  <td class="col-md-3">${labelMachineUnion.label.desc}</td>
+                  <td class="col-md-3">
+                    #for (Machine machine : labelMachineUnion.machines)
+                      #if (!for.first)<br>#end
+                      <a href="${CONTEXT_PATH}/machine/detail/${machine.id}">${machine.host}</a>
+                    #end
+                  </td>
+                  <td class="col-md-2"><a class="label label-info" href="${CONTEXT_PATH}/label/conn/${labelMachineUnion.label.id}">连接</a></td>
+                </tr>
+              #end
+            </tbody>
+          </table>
+        </div>
+        <div class="box-footer clearfix">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+#end
+#tag layout_block("scriptContent")
+<script src="//static.foneshare.cn/oss/datatables-1.10.12/datatables.min.js"></script>
+<script src="//static.foneshare.cn/oss/datatables-1.10.12/jquery.highlight.js/jquery.highlight.js"></script>
+
+<script>
+  $(document).ready(function() {
+    var dtOption = {
+      columnDefs: [
+        {orderable: false, targets: [3]}
+      ],
+      order: [],
+      select: false,
+      pagingType: "full_numbers",
+      paging: true,
+      pageLength: 25,
+      info: true,
+      searching: true,
+      language: {
+        emptyTable: "无记录",
+        lengthMenu: "每页 _MENU_ 条记录",
+        info: "第 _PAGE_ 页 ( 总共 _PAGES_ 页 )",
+        infoEmpty: "无记录",
+        infoFiltered: "(从 _MAX_ 条记录过滤)",
+        loadingRecords: "加载中...",
+        processing: "处理中...",
+        search: "搜索: ",
+        zeroRecords: "没有找到记录",
+        paginate: {
+          first: "首页",
+          previous: "上一页",
+          next: "下一页",
+          last: "尾页"
+        }
+      }
+    };
+
+    var table = $('#labelTable').DataTable(dtOption);
+    // 监听 DT 的重绘事件
+    table.on('draw', function () {
+      console.log('draw');
+      //获得需要高亮的容器部分
+      var body = $(table.table().body());
+      //如果之前有高亮把高亮部分去掉
+      body.unhighlight();
+      //根据搜索框里的关键字 高亮显示
+      body.highlight(table.search());
+    });
+  });
+
+</script>
+#end
+#include("/layout/layout-main.jetx")

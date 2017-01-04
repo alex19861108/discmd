@@ -1,0 +1,48 @@
+<div class="main-sidebar">
+  <!-- Inner sidebar -->
+  <div class="sidebar">
+    <!-- Sidebar Menu -->
+    <ul class="sidebar-menu">
+      <li class="header">导航栏</li>
+      <!-- Optionally, you can add icons to the links -->
+      <li class="active treeview">
+        <a href="">
+          <i class="fa fa-laptop"></i>
+          <span>机器管理</span>
+          <i class="fa fa-angle-left pull-right"></i>
+        </a>
+        <ul class="treeview-menu">
+          <li><a href="${CONTEXT_PATH}/machine/"><i class="fa fa-circle-o"></i>机器管理</a></li>
+          <li><a href="${CONTEXT_PATH}/machine/deploy/"><i class="fa fa-circle-o"></i>文件部署</a></li>
+          #if (hasRole("admin"))
+          <li><a href="${CONTEXT_PATH}/machine/import/"><i class="fa fa-circle-o"></i>机器同步</a></li>
+          #end
+        </ul>
+      </li>
+      <li class="active treeview">
+        <a href="${CONTEXT_PATH}/label/">
+        <i class="fa fa-book"></i>
+          <span>标签管理</span>
+          <i class="fa fa-angle-left pull-right"></i>
+        </a>
+        <ul class="treeview-menu">
+          <li><a href="${CONTEXT_PATH}/label/"><i class="fa fa-circle-o"></i>标签管理</a></li>
+        </ul>
+      </li>
+      <li class="active treeview">
+      <a>
+        <i class="fa fa-edit"></i>
+        <span>用户管理</span>
+        <i class="fa fa-angle-left pull-right"></i>
+      </a>
+      <ul class="treeview-menu">
+        #if (hasRole("admin"))
+          <li><a href="${CONTEXT_PATH}/user/"><i class="fa fa-circle-o"></i>用户管理</a></li>
+        #end
+        <li><a href="${CONTEXT_PATH}/user/owned_account/"><i class="fa fa-circle-o"></i>登陆账户</a></li>
+      </ul>
+      </li>
+    </ul><!-- /.sidebar-menu -->
+
+  </div><!-- /.sidebar -->
+</div><!-- /.main-sidebar -->

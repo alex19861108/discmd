@@ -1,0 +1,26 @@
+
+#tag layout_block("headContent")
+#end
+
+#tag layout_block("breadcrumbContent")
+#end
+
+#tag layout_block("bodyContent")
+<section class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="box box-info">
+        <div class="box-header with-border">
+          <h3 class="box-title">错误</h3>
+        </div>
+        <div class="box-body">
+          很抱歉，您要访问的页面不存在！
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+#end
+#tag layout_block("scriptContent")
+#end
+#include("/layout/layout-main.jetx")

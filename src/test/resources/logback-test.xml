@@ -1,0 +1,36 @@
+<configuration scan="false" scanPeriod="60 seconds" debug="false">
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss} [%thread] %-5level %logger{12} %X{traceId} %X{userId} %msg%rEx{full,
+                java.lang.Thread,
+                javassist,
+                sun.reflect,
+                org.springframework,
+                org.apache,
+                org.eclipse.jetty,
+                $Proxy,
+                java.net,
+                java.io,
+                java.util,
+                javax.servlet,
+                org.junit,
+                com.mysql,
+                com.sun,
+                org.mybatis.spring,
+                cglib,
+                CGLIB,
+                java.util.concurrent,
+                okhttp,
+                org.jboss,
+                }%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="org.hibernate" level="WARN"/>
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.apache" level="WARN"/>
+
+    <root level="info">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

@@ -1,0 +1,52 @@
+#set(active_nav="machineMgr")
+
+#tag layout_block("headContent")
+#end
+
+#tag layout_block("breadcrumbContent")
+<section class="content-header">
+  <h1>
+    详细信息
+    <small>机器详细信息</small>
+  </h1>
+  <ol class="breadcrumb">
+    <li><a href="#"><i class="fa fa-dashboard"></i>主页</a></li>
+    <li><a href="${CONTEXT_PATH}/machine/">机器管理</a></li>
+    <li class="active">详细信息</li>
+  </ol>
+</section>
+#end
+
+#tag layout_block("bodyContent")
+<section class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="box box-info">
+        <div class="box-header with-border">
+          <h3 class="box-title"></h3>
+        </div>
+        <div class="box-body">
+          <table class="table table-bordered">
+            <tr>
+              <td>机器ip</td>
+              <td>${machine.host}</td>
+            </tr>
+            <tr>
+              <td>所属label</td>
+              <td>#for (Label label : labels)${label.nm}<br>#end</td>
+            </tr>
+          </table>
+        </div>
+        <div class="box-footer clearfix">
+          <div class="col-sm-offset-2">
+            <a class="btn btn-info" href="${CONTEXT_PATH}/machine/edit/${machine.id}">编辑</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+#end
+#tag layout_block("scriptContent")
+#end
+#include("/layout/layout-main.jetx")

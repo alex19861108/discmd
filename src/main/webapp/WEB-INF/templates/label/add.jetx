@@ -1,0 +1,151 @@
+#set(active_nav="labelMgr")
+
+#tag layout_block("headContent")
+<link href="//static.foneshare.cn/oss/bootstrap-tokenfield/0.12.0/css/tokenfield-typeahead.min.css" rel="stylesheet">
+<link href="//static.foneshare.cn/oss/bootstrap-tokenfield/0.12.0/css/bootstrap-tokenfield.min.css" rel="stylesheet">
+<style>
+  .tokenfield .token {
+    border-radius: 0px;
+  }
+</style>
+#end
+
+#tag layout_block("breadcrumbContent")
+<section class="content-header">
+  <h1>
+    标签管理
+    <small></small>
+  </h1>
+  <ol class="breadcrumb">
+    <li><a href="${CONTEXT_PATH}"><i class="fa fa-dashboard"></i>主页</a></li>
+    <li><a href="${CONTEXT_PATH}/label/">标签管理</a></li>
+    <li class="active"><a href="#">新建标签</a></li>
+  </ol>
+</section>
+#end
+
+#tag layout_block("bodyContent")
+<section class="content">
+  <!--<div class="row" ng-app="labelAdd" ng-controller="labelAddCtrl">-->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="box box-info">
+        <div class="box-header with-border">
+        </div>
+        <form class="form-horizontal" method="post">
+          <div class="box-body">
+            <div class="form-group">
+              <label for="nm" class="col-sm-2 control-label">标签名称</label>
+              <div class="col-sm-4">
+                <input type="text" class="form-control" id="nm" name="nm" placeholder="">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="desc" class="col-sm-2 control-label">标签描述</label>
+              <div class="col-sm-4">
+                <textarea class="form-control" id="desc" name="desc" rows="3"></textarea>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="machines" class="col-sm-2 control-label">添加机器</label>
+              <div class="col-sm-4">
+                <textarea class="form-control" id="machines" name="machines" rows="10"></textarea>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="users" class="col-sm-2 control-label">绑定用户</label>
+              <div class="col-sm-4">
+                <input type="text" class="user-input form-control" id="users" name="users" />
+              </div>
+            </div>
+          </div>
+          <div class="box-footer">
+            <div class="col-sm-offset-3">
+              <button type="submit" class="btn btn-info">提交</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+#end
+#tag layout_block("scriptContent")
+
+<!-- angulari.js -->
+<script src="http://code.angularjs.org/angular-1.0.1.min.js"></script>
+
+<!--bootstrap-tokenfield -->
+<script src="//static.foneshare.cn/oss/bootstrap-tokenfield/0.12.0/js/bootstrap-tokenfield.min.js"></script>
+<script src="//static.foneshare.cn/oss/bootstrap-tokenfield/0.11.9/js/typeahead.bundle.min.js"></script>
+<script src="${CONTEXT_PATH}/js/user.js"></script>
+
+<script>
+
+  /**
+   * 人名auto complete
+   */
+  var user = new User();
+  user.selector = $(".user-input");
+  user.remoteUrl = "${CONTEXT_PATH}/user/findUserByName?name=%QUERY";
+  user.display = 'realname';
+  user.name = 'username';
+  user.init();
+  user.tokenfield();
+
+
+
+
+
+
+
+  /**
+  var engine = new Bloodhound({
+    datumTokenizer: function (datum) {
+      return Bloodhound.tokenizers.whitespace(datum.value);
+    },
+    queryTokenizer: Bloodhound.tokenizers.whitespace,
+    remote: {
+      url: "${CONTEXT_PATH}/user/findUserByName?name=%QUERY",
+      wildcard: "%QUERY",
+      rateLimitBy: 100
+    }
+  });
+  engine.initialize();
+  $(".user-input").tokenfield({
+    limit: 0,
+    minLength: 0,
+    minWidth: 60,
+    showAutocompleteOnFocus: true,
+    typeahead: [null, {
+      source: engine.ttAdapter(),
+      display: 'realname',
+      name: 'realname'
+    }],
+    createTokensOnBlur: true,
+    delimiter: ',',
+    beautify: true,
+    inputType: 'text'
+  }).on("tokenfield:createtoken", function(event) {
+    var existingTokens = $(this).tokenfield('getTokens');
+    $.each(existingTokens, function(index, token) {
+      if (token.value === event.attrs.value)
+        event.preventDefault();
+    });
+  });
+   */
+
+  /**
+   * angularjs
+   */
+
+  /**
+  var app = angular.module('labelAdd', []);
+  app.controller('labelAddCtrl', function($scope) {
+    $scope.machine = "";
+  });
+  */
+
+</script>
+#end
+#include("/layout/layout-main.jetx")

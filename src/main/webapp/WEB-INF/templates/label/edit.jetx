@@ -1,0 +1,106 @@
+#set(active_nav="labelMgr")
+
+#tag layout_block("headContent")
+<link href="//static.foneshare.cn/oss/bootstrap-tokenfield/0.12.0/css/tokenfield-typeahead.min.css" rel="stylesheet">
+<link href="//static.foneshare.cn/oss/bootstrap-tokenfield/0.12.0/css/bootstrap-tokenfield.min.css" rel="stylesheet">
+<style>
+  .tokenfield .token {
+    border-radius: 0px;
+  }
+  textarea .word-break {
+    word-wrap: break-word;
+    word-break: break-all;
+  }
+</style>
+#end
+
+#tag layout_block("breadcrumbContent")
+<section class="content-header">
+  <h1>
+    标签编辑
+    <small></small>
+  </h1>
+  <ol class="breadcrumb">
+    <li><a href="${CONTEXT_PATH}"><i class="fa fa-dashboard"></i>主页</a></li>
+    <li><a href="${CONTEXT_PATH}/label/">标签管理</a></li>
+    <li class="active"><a href="#">编辑标签</a></li>
+  </ol>
+</section>
+#end
+
+#tag layout_block("bodyContent")
+<section class="content">
+  <!--<div class="row" ng-app="labelAdd" ng-controller="labelAddCtrl">-->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="box box-info">
+        <div class="box-header with-border">
+        </div>
+        <form class="form-horizontal" method="post">
+          <div class="box-body">
+            <input type="hidden" name="id" value="${label.id}"/>
+            <div class="form-group">
+              <label for="nm" class="col-sm-2 control-label">标签名称</label>
+              <div class="col-sm-4">
+                <input type="text" class="form-control" id="nm" name="nm" value="${label.nm}">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="desc" class="col-sm-2 control-label">标签描述</label>
+              <div class="col-sm-4">
+                <textarea class="form-control" id="desc" name="desc" rows="3">${label.desc}</textarea>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="machines" class="col-sm-2 control-label">绑定机器</label>
+              <div class="col-sm-4">
+                <textarea class="form-control" id="machines" name="machines" rows="10">
+                  #for (Machine machine : machines)${machine.host}&#13;&#10;#end</textarea>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="users" class="col-sm-2 control-label">绑定用户</label>
+              <div class="col-sm-4">
+                <input id="userIds" type="hidden" name="userIds" value="#for (com.github.cas.User user : users)#if(!for.first),#end${user.id}#end" />
+                <!--<input type="text" class="user-input form-control" id="users" name="users" value="#for (com.github.cas.User user : users)#if(!for.first),#end${user.realname}#end"/>-->
+                <input type="text" class="user-input form-control" id="users" name="users"
+                       value="#for (com.github.cas.User user : users)#if(!for.first),#end${user.realname}#end"/>
+              </div>
+            </div>
+          </div>
+
+          <div class="box-footer">
+            <div class="col-sm-offset-3">
+              <button type="submit" class="btn btn-info">提交</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+#end
+#tag layout_block("scriptContent")
+
+<!-- angulari.js -->
+<script src="http://code.angularjs.org/angular-1.0.1.min.js"></script>
+
+<!--bootstrap-tokenfield -->
+<script src="//static.foneshare.cn/oss/bootstrap-tokenfield/0.12.0/js/bootstrap-tokenfield.min.js"></script>
+<script src="//static.foneshare.cn/oss/bootstrap-tokenfield/0.11.9/js/typeahead.bundle.min.js"></script>
+<script src="${CONTEXT_PATH}/js/user.js"></script>
+
+<script>
+  var user = new User();
+  user.selector = $(".user-input");
+  user.remoteUrl = "${CONTEXT_PATH}/user/findUserByName?name=%QUERY";
+  user.display = 'realname';
+  user.name = 'username';
+  user.init();
+  user.tokenfield();
+
+</script>
+#end
+#include("/layout/layout-main.jetx")

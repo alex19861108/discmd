@@ -1,0 +1,122 @@
+#set(active_nav="machineMgr")
+
+#tag layout_block("headContent")
+#end
+
+#tag layout_block("breadcrumbContent")
+<section class="content-header">
+  <h1>
+    文件部署
+    <small>批量部署代码或者文件</small>
+  </h1>
+  <ol class="breadcrumb">
+    <li><a href="${CONTEXT_PATH}"><i class="fa fa-dashboard"></i>主页</a></li>
+    <li><a href="${CONTEXT_PATH}/machine/deploy/">文件部署</a></li>
+    <li class="active"><a href="#">部署结果</a></li>
+  </ol>
+</section>
+#end
+
+#tag layout_block("bodyContent")
+<section class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="box box-info">
+        <div class="box-header with-border">
+        </div>
+        <div class="box-body">
+          <input type="hidden" id="jobId" name="jobId" value="${jobId}" />
+          <input type="hidden" id="jobStatus" name="jobStatus" value="${job.statusCd}" />
+          <table class="table table-bordered">
+            <tr>
+              <th class="col-md-2">名称</th>
+              <th class="col-md-4">描述</th>
+              <th class="col-md-4">进度</th>
+              <th class="col-md-2">状态</th>
+            </tr>
+            #for (Task task : tasks)
+            <tr>
+              <td>${task.nm}</td>
+              <td>${task.desc}</td>
+              <td class="task-progress" id="task-progress_${task.id}">
+                <div class="progress progress-sm">
+                  #if (task.statusCd == "RUNNING")
+                    <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 10%"></div>
+                  #elseif (task.statusCd == "SUCCESS")
+                    <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                  #elseif (task.statusCd == "FAILED")
+                    <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                  #else
+                    <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                  #end
+                </div>
+              </td>
+              <td class="task-status" id="task-status_${task.id}">
+                #if (task.statusCd == "RUNNING" || task.statusCd == "SUCCESS")
+                <span class="label label-success">${task.statusCd}</span>
+                #else
+                <span class="label label-danger">${task.statusCd}</span>
+                #end
+              </td>
+            </tr>
+            #end
+          </table>
+        </div>
+        <div class="box-footer clearfix">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+#end
+#tag layout_block("scriptContent")
+<script type="application/javascript">
+  $(document).ready(function () {
+
+    var jobId = $("#jobId").val();
+    var jobStatus = $("#jobStatus").val();
+
+    if (jobStatus == "RUNNING" || jobStatus == "PENDING") {
+      var pollingTimes = 0;
+      var refreshStatus = function() {
+        $.ajax({
+          url: "${CONTEXT_PATH}/machine/deploy/jobStatus",
+          type: "POST",
+          data: {jobId: jobId},
+          dataType: "json",
+          async: false,
+          cache: false,
+          success: function(data) {
+            var runningCount = 0;
+            pollingTimes += 1;
+            $.each(data, function(idx, d) {
+              if (d.statusCd == "RUNNING") {
+                var width = pollingTimes * 25 % 100;
+                $("#task-progress_" + d.id)[0].innerHTML = '<div class="progress progress-sm"><div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width:' + width + '%"></div></div>';
+                $("#task-status_" + d.id)[0].innerHTML = '<span class="label label-success">' + d.statusCd + '</span>';
+                runningCount += 1
+              } else if (d.statusCd == "SUCCESS") {
+                $("#task-progress_" + d.id)[0].innerHTML = '<div class="progress progress-sm"><div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div></div>';
+                $("#task-status_" + d.id)[0].innerHTML = '<span class="label label-success">' + d.statusCd + '</span>';
+              } else if (d.statusCd == "FAILED") {
+                $("#task-progress_" + d.id)[0].innerHTML = '<div class="progress progress-sm"><div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div></div>';
+                $("#task-status_" + d.id)[0].innerHTML = '<span class="label label-danger">' + d.statusCd + '</span>';
+              } else {
+                $("#task-progress_" + d.id)[0].innerHTML = '<div class="progress progress-sm"><div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div></div>';
+                $("#task-status_" + d.id)[0].innerHTML = '<span class="label label-danger">' + d.statusCd + '</span>';
+              }
+            });
+
+            if (runningCount == 0) {
+              clearInterval(handler);
+            }
+          }
+        });
+      };
+
+      var handler = setInterval(refreshStatus, 2000);
+    }
+  });
+</script>
+#end
+#include("/layout/layout-main.jetx")

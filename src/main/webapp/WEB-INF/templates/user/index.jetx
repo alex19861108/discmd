@@ -1,0 +1,106 @@
+#set(active_nav="userMgr")
+
+#tag layout_block("headContent")
+<link href="//static.foneshare.cn/oss/AdminLTE/plugins/datatables/dataTables.bootstrap.css" rel="stylesheet" type="text/css"/>
+<link href="//static.foneshare.cn/oss/select/1.2.0/css/select.dataTables.min.css" rel="stylesheet" type="text/css">
+<link href="//static.foneshare.cn/oss/datatables-1.10.12/Buttons-1.2.1/css/buttons.dataTables.min.css" rel="stylesheet" type="text/css">
+#end
+
+#tag layout_block("breadcrumbContent")
+<section class="content-header">
+  <h1>
+    用户管理
+    <small></small>
+  </h1>
+  <ol class="breadcrumb">
+    <li><a href="${CONTEXT_PATH}"><i class="fa fa-dashboard"></i>主页</a></li>
+    <li><a href="${CONTEXT_PATH}/user/">用户管理</a></li>
+    <li class="active"><a href="#">查看用户</a></li>
+  </ol>
+</section>
+#end
+
+#tag layout_block("bodyContent")
+<section class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="box box-info">
+        <div class="box-header with-border">
+          <h3 class="box-title">已绑定用户</h3>
+        </div>
+        <div class="box-body">
+          <table class="table table-bordered table-striped" id="userTable">
+            <thead>
+              <tr>
+                <td>用户名</td>
+                <td>手机号</td>
+                <td>登陆账户</td>
+                <td>登陆密码</td>
+              </tr>
+            </thead>
+            <tbody>
+              #for (UserLoginAccount user : users)
+              <tr>
+                <td>${user.realname}</td>
+                <td>${user.username}</td>
+                <td>${user.account}</td>
+                <td>${user.password}</td>
+              </tr>
+              #end
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+#end
+#tag layout_block("scriptContent")
+<script src="//static.foneshare.cn/oss/datatables-1.10.12/datatables.min.js"></script>
+<script src="//static.foneshare.cn/oss/select/1.2.0/js/dataTables.select.min.js"></script>
+<script src="//static.foneshare.cn/oss/datatables-1.10.12/Buttons-1.2.1/js/dataTables.buttons.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+
+    renderUserDT();
+
+    /**
+     * 机器列表
+     * */
+    function renderUserDT() {
+      var dtOption = {
+        select: false,
+        columnDefs: [
+          { orderable: false, targets: [ 0, 1, 2, 3 ] }
+        ],
+        order: [],
+        pagingType: "full_numbers",
+        paging: true,
+        pageLength: 25,
+        info: true,
+        searching: true,
+        language: {
+          emptyTable: "无记录",
+          lengthMenu: "每页 _MENU_ 条记录",
+          info: "第 _PAGE_ 页 ( 总共 _PAGES_ 页 )",
+          infoEmpty: "无记录",
+          infoFiltered: "(从 _MAX_ 条记录过滤)",
+          loadingRecords: "加载中...",
+          processing: "处理中...",
+          search: "搜索: ",
+          zeroRecords: "没有找到记录",
+          paginate: {
+            first: "首页",
+            previous: "上一页",
+            next: "下一页",
+            last: "尾页"
+          }
+        }
+      };
+      $('#userTable').DataTable(dtOption);
+    }
+  });
+</script>
+#end
+#include("/layout/layout-main.jetx")

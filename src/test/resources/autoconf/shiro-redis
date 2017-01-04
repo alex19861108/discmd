@@ -1,0 +1,12 @@
+redis.servers=172.31.101.12:6379
+redis.password=fsxiaoke
+redis.dbIndex=2
+
+startup=true
+
+pool.maxActive=100
+pool.minIdle=5
+pool.maxWaitMillis=3000
+pool.testOnBorrow=false
+pool.testOnReturn=false
+pool.testWhileIdle=true

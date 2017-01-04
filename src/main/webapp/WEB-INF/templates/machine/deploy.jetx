@@ -1,0 +1,229 @@
+#set(active_nav="machineMgr")
+
+#tag layout_block("headContent")
+<link href="//static.foneshare.cn/oss/AdminLTE/plugins/datatables/dataTables.bootstrap.css" rel="stylesheet" type="text/css"/>
+<link href="//static.foneshare.cn/oss/select/1.2.0/css/select.dataTables.min.css" rel="stylesheet" type="text/css">
+<link href="//static.foneshare.cn/oss/datatables-1.10.12/Buttons-1.2.1/css/buttons.dataTables.min.css" rel="stylesheet" type="text/css">
+<style>
+  table.dataTable tbody>tr.selected:nth-child(odd),table.dataTable tbody>tr>.selected:nth-child(odd) {
+    background-color: #f9f9f9;
+  }
+  table.dataTable tbody>tr.selected:nth-child(even),table.dataTable tbody>tr>.selected:nth-child(even) {
+    background-color: #fff;
+  }
+</style>
+#end
+
+#tag layout_block("breadcrumbContent")
+<section class="content-header">
+  <h1>
+    文件部署
+    <small>批量部署代码或者文件</small>
+  </h1>
+  <ol class="breadcrumb">
+    <li><a href="${CONTEXT_PATH}"><i class="fa fa-dashboard"></i>主页</a></li>
+    <li class="active"><a href="${CONTEXT_PATH}/machine/deploy/">文件部署</a></li>
+  </ol>
+</section>
+#end
+
+#tag layout_block("bodyContent")
+<section class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="box box-info">
+        <div class="box-header with-border">
+        </div>
+        <div class="box-body">
+          <input type="hidden" id="userLoginAccountSize" name="userLoginAccountSize" value="${userLoginAccountSize}">
+          <table class="table table-bordered table-striped" id="machineTable">
+            <thead>
+            <tr>
+              <th>#</th>
+              <th>机器ip</th>
+              <th>所属label</th>
+              <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            #for (MachineLabelUnion machineLabelUnion : machineLabelUnions)
+            <tr>
+              <td><input type="checkbox" name="machine_ids" value="${machineLabelUnion.machine.id}" form="uploadForm"></td>
+              <td><a href="${CONTEXT_PATH}/machine/detail/${machineLabelUnion.machine.id}">${machineLabelUnion.machine.host}</a></td>
+              <td>
+                #for (Label label : machineLabelUnion.labels)
+                #if (!for.first)<br>#end<a href="${CONTEXT_PATH}/label/detail/${label.id}">${label.nm}</a>
+                #end
+              </td>
+              <td>
+                <a target="_blank" class="label label-info" href="${CONTEXT_PATH}/machine/terminals/by_id/?machine_ids=${machineLabelUnion.machine.id}">连接</a>
+              </td>
+            </tr>
+            #end
+            </tbody>
+          </table>
+        </div>
+        <div class="box-footer clearfix">
+        </div>
+      </div>
+
+      <div class="box">
+        <form id="uploadForm" class="form-horizontal" action="${CONTEXT_PATH}/machine/deploy/" method="post" enctype="multipart/form-data">
+          <div class="box-header with-border">
+          </div>
+          <div class="box-body">
+            <div class="form-group">
+              <label for="upload" class="col-sm-2 control-label">选择文件</label>
+              <div class="col-sm-4">
+                <input type="file" class="form-control" id="upload" name="upload" multiple="multiple">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="destination" class="col-sm-2 control-label">目标路径</label>
+              <div class="col-sm-4">
+                <input type="text" class="form-control" id="destination" name="destination" placeholder="~">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label"></label>
+              <div class="col-sm-4">
+                #if (userLoginAccounts.size() == 1)
+                  #for (UserLoginAccount userLoginAccount : userLoginAccounts)
+                    <input type="hidden" name="account_id" value="${userLoginAccount.id}" form="uploadForm">
+                  #end
+
+                  <button type="submit" class="btn btn-info btn-flat">部署</button>
+                #elseif (userLoginAccounts.size() > 1)
+                  <button type="button" class="btn btn-info btn-flat" data-toggle="modal" data-target="#userLoginAccountModal">部署</button>
+                #end
+              </div>
+            </div>
+          </div>
+          <div class="box-footer clearfix">
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Modal -->
+<div class="modal" id="userLoginAccountModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">请选择登陆账号</h4>
+      </div>
+      <div class="modal-body">
+        <!-- 多账户 -->
+        <table class="table table-bordered table-striped" id="userLoginAccountTable">
+          #for (UserLoginAccount userLoginAccount : userLoginAccounts)
+          <tr>
+            <td><input type="radio" name="account_id" value="${userLoginAccount.id}" form="uploadForm" class="userLoginAccountRatio"></td>
+            <td>${userLoginAccount.account}</td>
+          </tr>
+          #end
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal">取消</button>
+        <button type="submit" class="btn btn-primary" form="uploadForm">确定</button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+
+#end
+#tag layout_block("scriptContent")
+<script src="//static.foneshare.cn/oss/datatables-1.10.12/datatables.min.js"></script>
+<script src="//static.foneshare.cn/oss/select/1.2.0/js/dataTables.select.min.js"></script>
+<script src="//static.foneshare.cn/oss/datatables-1.10.12/Buttons-1.2.1/js/dataTables.buttons.min.js"></script>
+
+
+<script type="application/javascript">
+
+  $(document).ready(function() {
+
+    renderMachineDT();
+
+    /**
+     * 机器列表
+     * */
+    function renderMachineDT() {
+      var dtOption = {
+        dom: 'Bftlp',
+        select: true,
+        buttons: [
+          {
+            text: '全选',
+            action: function () {
+              table.rows().select();
+              var rows = table.rows({search: 'applied', selected: true, page: 'current'}).nodes();
+              $('input[type="checkbox"]', rows).prop('checked', true);
+            }
+          },
+          {
+            text: '全不选',
+            action: function () {
+              table.rows().deselect();
+              var rows = table.rows({search: 'applied', selected: false, page: 'current'}).nodes();
+              $('input[type="checkbox"]', rows).prop('checked', false);
+            }
+          }
+        ],
+        columnDefs: [
+          { orderable: false, targets: [ 0, 3 ] }
+        ],
+        order: [],
+        pagingType: "full_numbers",
+        paging: true,
+        pageLength: 25,
+        info: true,
+        searching: true,
+        language: {
+          emptyTable: "无记录",
+          lengthMenu: "每页 _MENU_ 条记录",
+          info: "第 _PAGE_ 页 ( 总共 _PAGES_ 页 )",
+          infoEmpty: "无记录",
+          infoFiltered: "(从 _MAX_ 条记录过滤)",
+          loadingRecords: "加载中...",
+          processing: "处理中...",
+          search: "搜索: ",
+          zeroRecords: "没有找到记录",
+          paginate: {
+            first: "首页",
+            previous: "上一页",
+            next: "下一页",
+            last: "尾页"
+          }
+        }
+      };
+
+      var table = $('#machineTable').DataTable(dtOption);
+    }
+  });
+
+  // html5的永久存储
+  var storage = window.localStorage;
+
+  if (storage.userLoginAccountRatio){
+    $(".userLoginAccountRatio").each(function(idx, elem) {
+      if ($(this).attr("value") == storage.userLoginAccountRatio) {
+        $(this).attr("checked", "checked");
+      }
+    });
+  }
+
+  $(".userLoginAccountRatio").unbind("click").bind("click", function () {
+    var value = $(this).attr("value");
+    storage.userLoginAccountRatio = value;
+  })
+</script>
+
+#end
+#include("/layout/layout-main.jetx")

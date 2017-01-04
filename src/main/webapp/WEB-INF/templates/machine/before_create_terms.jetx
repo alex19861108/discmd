@@ -1,0 +1,93 @@
+#set(no_nav=true)
+#set(active_nav="machineMgr")
+
+#tag layout_block("headContent")
+#end
+
+#tag layout_block("breadcrumbContent")
+#end
+
+#tag layout_block("bodyContent")
+<section class="content">
+  <input type="hidden" id="userLoginAccountSize" name="userLoginAccountSize" value="${userLoginAccountSize}">
+</section>
+<!-- Modal -->
+<div class="modal" id="userLoginAccountModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="${CONTEXT_PATH}/machine/terminal/async/by_id/" id="userLoginAccountForm" method="get">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title">请选择登陆账号</h4>
+        </div>
+        <div class="modal-body">
+          #for (Long machineId : machineIds)
+            <input type="hidden" name="machine_ids" value="${machineId}">
+          #end
+
+          <!-- 多账户 -->
+          #if (userLoginAccounts.size() > 1)
+            <table class="table table-bordered table-striped" id="userLoginAccountTable">
+              #for (UserLoginAccount userLoginAccount : userLoginAccounts)
+              <tr>
+                <td><input type="radio" name="account_id" value="${userLoginAccount.id}" class="userLoginAccountRatio"></td>
+                <td>${userLoginAccount.account}</td>
+              </tr>
+              #end
+            </table>
+          #elseif (userLoginAccounts.size() == 1)
+          <!-- 单账户 -->
+            #for (UserLoginAccount userLoginAccount : userLoginAccounts)
+              <td><input name="account_id" value="${userLoginAccount.id}"></td>
+            #end
+          #end
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default pull-left" data-dismiss="modal">取消</button>
+          <button type="submit" class="btn btn-primary">确定</button>
+        </div>
+      </form>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+#end
+
+#tag layout_block("scriptContent")
+<script>
+  $(document).ready(function () {
+
+    var userLoginAccountSize = $('#userLoginAccountSize').val();
+    if (userLoginAccountSize > 1) {
+      $('#userLoginAccountModal').modal();
+    } else if (userLoginAccountSize) {
+      $('#userLoginAccountForm').submit();
+    }
+
+    $('#userLoginAccountModal').on('hidden.bs.modal', function() {
+      window.opener = null;
+      window.close();
+    });
+
+    // html5的永久存储
+    var storage = window.localStorage;
+
+    if (storage.userLoginAccountRatio){
+      $(".userLoginAccountRatio").each(function(idx, elem) {
+        if ($(this).attr("value") == storage.userLoginAccountRatio) {
+          $(this).attr("checked", "checked");
+        }
+      });
+    }
+
+    $(".userLoginAccountRatio").unbind("click").bind("click", function () {
+      var value = $(this).attr("value");
+      storage.userLoginAccountRatio = value;
+    })
+  });
+</script>
+#end
+#include("/layout/layout-main.jetx")

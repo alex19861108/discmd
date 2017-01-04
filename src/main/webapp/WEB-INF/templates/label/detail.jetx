@@ -1,0 +1,71 @@
+#set(active_nav="labelMgr")
+
+#tag layout_block("headContent")
+#end
+
+#tag layout_block("breadcrumbContent")
+<section class="content-header">
+  <h1>
+    标签详情
+    <small></small>
+  </h1>
+  <ol class="breadcrumb">
+    <li><a href="${CONTEXT_PATH}"><i class="fa fa-dashboard"></i>主页</a></li>
+    <li><a href="${CONTEXT_PATH}/label/">标签管理</a></li>
+    <li class="active"><a href="#">标签详情</a></li>
+  </ol>
+</section>
+#end
+
+#tag layout_block("bodyContent")
+<section class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="box box-info">
+        <div class="box-header with-border">
+        </div>
+          <div class="box-body">
+            <table class="table table-bordered">
+              <tr>
+                <td>标签名称</td>
+                <td>${label.nm}</td>
+              </tr>
+              <tr>
+                <td>标签描述</td>
+                <td>${label.desc}</td>
+              </tr>
+              <tr>
+                <td>绑定机器</td>
+                <td>
+                  #for (Machine machine : machines)
+                    #if (!for.first),#end
+                    ${machine.host}
+                  #end
+                </td>
+              </tr>
+              <tr>
+                <td>绑定用户</td>
+                <td>
+                  #for (com.github.cas.User user : users)
+                    #if (!for.first),#end
+                    ${user.realname}
+                  #end
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="box-footer clearfix">
+            <div class="col-sm-offset-2">
+              <a class="btn btn-info" href="${CONTEXT_PATH}/label/edit/${label.id}">编辑</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+#end
+#tag layout_block("scriptContent")
+#end
+#include("/layout/layout-main.jetx")

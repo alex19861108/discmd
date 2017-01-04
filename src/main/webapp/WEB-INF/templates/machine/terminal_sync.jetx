@@ -1,0 +1,346 @@
+#set(no_nav=true)
+#set(active_nav="machineMgr")
+
+#tag layout_block("headContent")
+<link rel="stylesheet" href="${CONTEXT_PATH}/css/terminal/style.css">
+<link rel="stylesheet" href="//static.foneshare.cn/oss/xterm/build/xterm.css">
+<link rel="stylesheet" href="//static.foneshare.cn/oss/xterm/addons/fullscreen/fullscreen.css">
+<link rel="stylesheet" href="//static.foneshare.cn/oss/xterm/demo/style.css">
+<link rel="stylesheet" href="//static.foneshare.cn/oss/jquery-ui-1.12.1/jquery-ui.css">
+<style>
+  h6 {
+    margin: 8px;
+  }
+  .keep-to-side {
+    padding-left: 1px;
+    padding-right: 1px;
+  }
+
+  .terminal-container {
+    margin: 2px 2px 2px 2px;
+  }
+</style>
+#end
+
+#tag layout_block("breadcrumbContent")
+#end
+
+#tag layout_block("bodyContent")
+<section class="content" ng-app="labelSearch" ng-controller="labelSearchCtrl">
+  <div class="row">
+    <div class="col-md-12 keep-to-side">
+      #if (machines.size() > 1)
+        <div class="col-md-offset-9">
+          <button class="btn btn-info btn-flat btn-select-all">全部选择</button>
+          <button class="btn btn-default btn-flat btn-select-none">取消全选</button>
+          <a class="btn btn-danger btn-flat btn-terminate-all" href="javascript:window.opener=null; window.close();">断开连接</a>
+        </div>
+      #else
+        <div class="col-md-offset-11">
+          <a class="btn btn-danger btn-flat btn-terminate-all" href="javascript:window.opener=null; window.close();">断开连接</a>
+        </div>
+      #end
+      <div class="terminal-container" id="terminal-container">
+
+        #for (Machine m : machines)
+        <div id="run_cmd_${m.instanceId}" class="run_cmd_active run_cmd">
+          <h6 class="term-header">${m.host}-(${userLoginAccount.account}@${m.host})</h6>
+          <div class="term">
+            <div id="output_${m.instanceId}" class="output"></div>
+          </div>
+          <div data-hostId="${m.host}" class="host"></div>
+        </div>
+        #end
+      </div>
+    </div>
+  </div>
+</section>
+#end
+#tag layout_block("scriptContent")
+<script type="application/javascript" src="//static.foneshare.cn/oss/xterm/build/xterm.js"></script>
+<script type="application/javascript" src="//static.foneshare.cn/oss/xterm/addons/attach/attach.js"></script>
+<script type="application/javascript" src="//static.foneshare.cn/oss/xterm/addons/fit/fit.js"></script>
+<script type="application/javascript" src="//static.foneshare.cn/oss/xterm/addons/fullscreen/fullscreen.js"></script>
+
+<script type="application/javascript" src="//static.foneshare.cn/oss/jquery-ui-1.12.1/jquery-ui.js"></script>
+
+<!--<script type="application/javascript" src="//cdn.bootcss.com/sockjs-client/1.1.1/sockjs.min.js"></script>-->
+<!--<script type="application/javascript" src="//cdn.bootcss.com/stomp.js/2.3.3/stomp.min.js"></script>-->
+<!--<script type="application/javascript" src="${CONTEXT_PATH}/js/terminal/mySockJS.js"></script>-->
+<script type="application/javascript" src="${CONTEXT_PATH}/js/reconnecting-websocket.min.js"></script>
+
+<script type="application/javascript">
+
+  $(document).ready(function () {
+
+    var protocol, socketURL, socket;
+
+    var termMap = {};
+
+    var y_offset = $('.run_cmd:first').innerHeight() - $('.run_cmd').find(".output:first").innerHeight();
+
+    // 获取选择的terminal
+    // get instance id list from selected terminals
+    function getActiveTermsInstanceIds() {
+      var ids = [];
+      $(".run_cmd_active").each(function (index) {
+        var id = $(this).attr("id").replace("run_cmd_", "");
+        ids.push(id);
+      });
+      return ids;
+    }
+
+    // 获取下一个实例id
+    // returns next instance id
+    function getNextInstanceId() {
+      var newInstanceId = 1;
+
+      for(var i=1;i<=$('.run_cmd').size();i++){
+
+        if($("#run_cmd_" + i).length == 0) {
+          newInstanceId=i;
+          break;
+        }
+        newInstanceId++;
+      }
+      return newInstanceId;
+    }
+
+    // 在元素上绑定事件
+    // function to set all terminal bindings when creating a term window
+    function setTerminalEvents(element)
+    {
+
+      //if terminal window toggle active for commands
+      element.mousedown(function (e) {
+        //check for cmd-click / ctr-click
+        if (!e.ctrlKey && !e.metaKey) {
+          $(".run_cmd").removeClass('run_cmd_active');
+        }
+
+        if (element.hasClass('run_cmd_active')) {
+          element.removeClass('run_cmd_active');
+        } else {
+          element.addClass('run_cmd_active')
+        }
+      });
+
+      // set focus to term
+      $(".output").mouseup(function (e) {
+        if(window.getSelection().toString()) {
+          // 鼠标选中的文字不为空
+        } else {
+        }
+      });
+
+      $(".output").bind('copy', function () {
+        setTimeout(function () {
+          window.getSelection().removeAllRanges();
+        }, 100);
+      });
+
+      //set resizable
+      element.resizable({
+        ghost: true,
+        stop: function (event, ui) {
+          resize($(this));
+        }
+      });
+    }
+
+    // resize element during drag event. Makes call to set pty width and height
+    function resize(element) {
+      var id = element.attr("id").replace("run_cmd_", "");
+
+      if (termMap[id]) {
+        var width = $('#run_cmd_'+id).find(".output:first").innerWidth();
+        var height = $('#run_cmd_'+id).innerHeight() - y_offset;
+
+        termMap[id].resize(Math.floor(width / 7.2981), Math.floor(height / 14.4166));
+
+        $.ajax({
+          url: "${CONTEXT_PATH}/terminal/setPtySize?instanceId=" + id + '&ptyWidth=' + width + "&ptyHeight=" + height,
+          cache: false
+        });
+      }
+    }
+
+    var optionElements = {cursorBlink: {checked: true}};
+
+    // 设置窗口大小
+    function setTerminalSize() {
+
+      // 修改
+      if($(".run_cmd").size() == 1) {
+        var width = document.body.offsetWidth;
+        var height = document.body.offsetHeight - 70;
+        $(".run_cmd:first").attr("style", "width:100%; height: " + height + "px");
+        resize($(".run_cmd:first"));
+      }
+    }
+
+    protocol = (location.protocol === 'https:') ? 'wss://' : 'ws://';
+    socketURL = protocol + location.hostname + ((location.port) ? (':' + location.port) : '') + '${CONTEXT_PATH}/terminal/label/webSocket/websocket?t=' + new Date().getTime();
+
+    //socket = new WebSocket(socketURL);
+    socket = new ReconnectingWebSocket(socketURL);
+    socket.onopen = function(event) {
+
+      var getMessage = function(e) {
+        var json = jQuery.parseJSON(e.data);
+        var firstInstanceId = Number.POSITIVE_INFINITY;
+        $.each(json, function(key, val) {
+          if (val.instanceId < firstInstanceId) {
+            firstInstanceId = val.instanceId;
+          }
+        });
+
+        $.each(json, function (key, val) {
+          if (val.output != '') {
+            if (!termMap[val.instanceId]) {
+              // terminal不存在
+              termMap[val.instanceId] = new Terminal({cursorBlink: optionElements.cursorBlink.checked});
+              termMap[val.instanceId].open($("#run_cmd_" + val.instanceId).find('.output').get(0));
+              termMap[val.instanceId].fit();
+              termMap[val.instanceId].write(val.output);
+
+              // terminal监听data事件
+              termMap[val.instanceId].on("data", sendData);
+              setTerminalEvents($("#run_cmd_" + val.instanceId));
+
+              // 设置terminal的大小
+              setTerminalSize();
+
+              // 将焦点放到第一个terminal
+              focusTerminal(firstInstanceId);
+
+            } else {
+              // terminal已经存在
+              var term = termMap[val.instanceId];
+              if (term instanceof Terminal) {
+                term.write(val.output);
+              }
+            }
+          }
+        });
+      };
+
+      // 发送数据
+      var sendData = function(data) {
+        var jsonStr = JSON.stringify({id: getActiveTermsInstanceIds(), command: data});
+        socket.send(jsonStr);
+      };
+
+      // 解绑
+      var detach = function (e) {
+        for (var idx in termMap) {
+          var term = termMap[idx];
+          if (term instanceof Terminal) {
+            term.off('data', sendData);
+          }
+        }
+
+        if (socket) {
+          socket.removeEventListener('message', getMessage);
+        }
+      };
+
+      // message 监听事件
+      socket.addEventListener('message', getMessage);
+      socket.addEventListener('close', detach);   // 使用bind传参,但是不执行
+      socket.addEventListener('error', detach);
+    };
+
+    function runFakeTerminals(termMap) {
+      for (var idx in termMap) {
+        var term = termMap[idx];
+        if (term instanceof Terminal) {
+          runFakeTerminal(term);
+        }
+      }
+    }
+
+    function runFakeTerminal(term) {
+      if (term._initialized) {
+        return;
+      }
+
+      term._initialized = true;
+
+      var shellprompt = '$ ';
+
+      term.prompt = function () {
+        term.write('\r\n' + shellprompt);
+      };
+
+      term.writeln('Welcome to xterm.js');
+      term.writeln('This is a local terminal emulation, without a real terminal in the back-end.');
+      term.writeln('Type some keys and commands to play around.');
+      term.writeln('');
+      term.prompt();
+
+      term.on('key', function (key, ev) {
+        var printable = (
+                !ev.altKey && !ev.altGraphKey && !ev.ctrlKey && !ev.metaKey
+        );
+
+        if (ev.keyCode == 13) {
+          term.prompt();
+        } else if (ev.keyCode == 8) {
+          // Do not delete the prompt
+          if (term.x > 2) {
+            term.write('\b \b');
+          }
+        } else if (printable) {
+          term.write(key);
+        }
+      });
+
+      term.on('paste', function (data, ev) {
+        term.write(data);
+      });
+    }
+
+    var focusFirstTerminal = function() {
+      focusTerminal(1);
+    };
+
+    var focusTerminal = function(instanceId) {
+      for (var idx in termMap) {
+        if (idx == instanceId) {
+          var term = termMap[idx];
+          if (term instanceof Terminal) {
+            term.focus();
+            break;
+          }
+        }
+      }
+    };
+
+    // 全选按钮
+    $(".btn-select-all").unbind("click").bind("click", function() {
+      $(".run_cmd").each(function(idx, element) {
+        if (!$(this).hasClass('run_cmd_active')) {
+          $(this).addClass('run_cmd_active')
+        }
+      });
+      focusFirstTerminal();
+    });
+
+    // 全不选
+    $(".btn-select-none").unbind("click").bind("click", function() {
+      $(".run_cmd").each(function(idx, element) {
+        if ($(this).hasClass('run_cmd_active')) {
+          $(this).removeClass('run_cmd_active')
+        }
+      });
+    });
+
+    // 页面刷新
+    window.onbeforeunload = function() {
+      socket.close();
+    };
+  });
+</script>
+#end
+#include("/layout/layout-main.jetx")

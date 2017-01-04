@@ -1,0 +1,23 @@
+#发布系统地址
+publishServerURL = http://oss.firstshare.cn/publish
+
+casServerUrlPrefix=http://oss.firstshare.cn/cas
+casService=http://localhost:8080/discmd/shiro-cas
+casRealmServerUrlPrefix=http://oss.firstshare.cn/cas
+
+# 重置ssh key
+resetSSHKey = true
+
+# key路径
+keyPath = ~/.ssh/
+#keyPath = /tmp
+
+# 启用key管理功能
+keyManagementEnabled = false
+
+#default timeout in minutes for websocket connection (no timeout for <=0)
+websocketTimeout=0
+
+
+# 超级管理员
+SuperManager = 13439087959

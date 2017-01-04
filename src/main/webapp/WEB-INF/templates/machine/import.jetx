@@ -1,0 +1,66 @@
+#set(active_nav="machineMgr")
+
+#tag layout_block("headContent")
+#end
+
+#tag layout_block("breadcrumbContent")
+<section class="content-header">
+  <h1>
+    机器同步
+    <small>从发布系统同步机器</small>
+  </h1>
+  <ol class="breadcrumb">
+    <li><a href="#"><i class="fa fa-dashboard"></i>主页</a></li>
+    <li><a href="${CONTEXT_PATH}/machine/">机器管理</a></li>
+    <li class="active"><a href="${CONTEXT_PATH}/machine/import/">机器同步</a></li>
+  </ol>
+</section>
+#end
+
+#tag layout_block("bodyContent")
+<section class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="box box-info">
+        <form class="form-horizontal" action="" method="post">
+          <div class="box-header with-border">
+            <h3 class="box-title">发布系统机器列表</h3>
+          </div>
+          <div class="box-body">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <td>#</td>
+                  <td>机器ip</td>
+                  <td>所属label</td>
+                </tr>
+              </thead>
+              <tbody>
+                #for (MachineLabelUnion machineLabelUnion: machineLabelUnions)
+                <tr>
+                  <td>${for.index}</td>
+                  <td>${machineLabelUnion.machine.host}</td>
+                  <td>
+                    #for (Label label : machineLabelUnion.labels)
+                      #if (!for.first).&nbsp;#end${label.nm}
+                    #end
+                  </td>
+                </tr>
+              #end
+              </tbody>
+            </table>
+          </div>
+          <div class="box-footer clearfix">
+            <div class="col-sm-offset-3">
+              <button type="submit" class="btn btn-info pull-left">同步</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+#end
+#tag layout_block("scriptContent")
+#end
+#include("/layout/layout-main.jetx")
